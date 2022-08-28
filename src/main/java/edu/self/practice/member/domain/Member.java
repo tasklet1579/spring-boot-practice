@@ -1,5 +1,6 @@
 package edu.self.practice.member.domain;
 
+import edu.self.practice.member.constant.Gender;
 import edu.self.practice.member.dto.MemberRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,11 +29,15 @@ public class Member {
     @Column(unique = true, nullable = false)
     private String phone;
 
+    @Column(nullable = false)
+    private Gender gender;
+
     public Member(MemberRequest request) {
         email = request.getEmail();
         password = request.getPassword();
         name = request.getName();
         phone = request.getPhone();
+        gender = Gender.findByName(request.getGender());
     }
 
     @Override
@@ -56,6 +61,7 @@ public class Member {
                 ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
+                ", gender=" + gender +
                 '}';
     }
 }

@@ -1,5 +1,6 @@
 package edu.self.practice.member.domain;
 
+import edu.self.practice.member.constant.Gender;
 import edu.self.practice.member.dto.MemberRequest;
 import edu.self.practice.member.repository.MemberRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -12,11 +13,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.persistence.EntityManager;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -28,8 +32,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class MemberTest {
-    private static final MemberRequest 회원가입_요청 = new MemberRequest("admin@mail.com", "admin1234", "admin", "010-1234-5678");
-    private static final MemberRequest 비밀번호_미입력_회원가입_요청 = new MemberRequest("admin@mail.com", null, "admin", "010-1234-5678");
+    private static final MemberRequest 회원가입_요청 = new MemberRequest("admin@mail.com", "admin1234", "admin", "010-1234-5678", "MALE");
+    private static final MemberRequest 비밀번호_미입력_회원가입_요청 = new MemberRequest("admin@mail.com", null, "admin", "010-1234-5678", "MALE");
 
     @Autowired
     private MemberRepository memberRepository;
@@ -37,8 +41,14 @@ class MemberTest {
     @Autowired
     private Validator validator;
 
+    @Autowired
+    private TestEntityManager testEntityManager;
+
+    private EntityManager entityManager;
+
     @BeforeEach
     void beforeEach() {
+        entityManager = testEntityManager.getEntityManager();
     }
 
     @AfterEach
@@ -82,9 +92,9 @@ class MemberTest {
     @DisplayName("커스텀 어노테이션을 사용해서 입력 값에 대한 유효성을 검증할 수 있다.")
     @ParameterizedTest
     @MethodSource("provideInvalidMemberRequest")
-    void validate(String email, String password, String name, String phone) {
+    void validate(String email, String password, String name, String phone, String gender) {
         // given
-        MemberRequest request = new MemberRequest(email, password, name, phone);
+        MemberRequest request = new MemberRequest(email, password, name, phone, gender);
 
         // when
         Set<ConstraintViolation<MemberRequest>> validate = validator.validate(request);
@@ -95,9 +105,25 @@ class MemberTest {
 
     private static Stream<Arguments> provideInvalidMemberRequest() {
         return Stream.of(
-                Arguments.of("admin@mail.com", "admin1234", "admin", null),
-                Arguments.of("admin@mail.com", "admin1234", "admin", "가나다라"),
-                Arguments.of("admin@mail.com", "admin1234", "admin", "01012345678")
+                Arguments.of("admin@mail.com", "admin1234", "admin", null, "MALE"),
+                Arguments.of("admin@mail.com", "admin1234", "admin", "가나다라", "MALE"),
+                Arguments.of("admin@mail.com", "admin1234", "admin", "01012345678", "MALE")
         );
+    }
+
+    @DisplayName("엔티티의 X 속성과 DB의 Y 타입에 해당하는 값이 양방향으로 변경되는지 확인한다.")
+    @Test
+    void findMembersByGender() {
+        // given
+        memberRepository.save(new Member(회원가입_요청));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        List<Member> members = memberRepository.findMembersByGender(Gender.MALE);
+
+        // then
+        assertThat(members).hasSize(1);
     }
 }

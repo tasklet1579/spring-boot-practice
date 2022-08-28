@@ -20,4 +20,5 @@ public class MemberRequest {
     private String name;
     @Phone
     private String phone;
+    private String gender;
 }
