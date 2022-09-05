@@ -11,12 +11,16 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  sql:
+    init:
+      mode: always
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     hibernate:
       ddl-auto: create-drop
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true

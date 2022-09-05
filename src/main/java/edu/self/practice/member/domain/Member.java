@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -32,12 +33,18 @@ public class Member {
     @Column(nullable = false)
     private Gender gender;
 
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "member", orphanRemoval = true)
+    private Profile profile;
+
+    private LocalDateTime createDate;
+
     public Member(MemberRequest request) {
         email = request.getEmail();
         password = request.getPassword();
         name = request.getName();
         phone = request.getPhone();
         gender = Gender.findByName(request.getGender());
+        createDate = LocalDateTime.now();
     }
 
     @Override

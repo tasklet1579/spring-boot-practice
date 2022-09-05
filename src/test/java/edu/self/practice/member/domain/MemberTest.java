@@ -3,6 +3,7 @@ package edu.self.practice.member.domain;
 import edu.self.practice.member.constant.Gender;
 import edu.self.practice.member.dto.MemberRequest;
 import edu.self.practice.member.repository.MemberRepository;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @DisplayName("회원 도메인")
 @DataJpaTest
@@ -125,5 +127,15 @@ class MemberTest {
 
         // then
         assertThat(members).hasSize(1);
+    }
+
+    @DisplayName("일대일 양방향 연관 관계에서 주인이 아닌 엔티티를 조회할 때는 지연 로딩이 발생하지 않는다.")
+    @Test
+    void noLazyLoading() {
+        // when
+        List<Member> members = memberRepository.findAll();
+
+        // then
+        members.forEach(member -> assertFalse(member.getProfile() instanceof HibernateProxy));
     }
 }
