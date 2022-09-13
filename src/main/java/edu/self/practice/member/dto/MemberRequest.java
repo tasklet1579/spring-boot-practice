@@ -21,4 +21,5 @@ public class MemberRequest {
     @Phone
     private String phone;
     private String gender;
+    private ProfileRequest profile;
 }

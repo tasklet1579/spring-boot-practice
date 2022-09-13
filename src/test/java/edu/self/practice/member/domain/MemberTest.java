@@ -2,6 +2,7 @@ package edu.self.practice.member.domain;
 
 import edu.self.practice.member.constant.Gender;
 import edu.self.practice.member.dto.MemberRequest;
+import edu.self.practice.member.dto.ProfileRequest;
 import edu.self.practice.member.repository.MemberRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +35,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class MemberTest {
-    private static final MemberRequest 회원가입_요청 = new MemberRequest("admin@mail.com", "admin1234", "admin", "010-1234-5678", "MALE");
-    private static final MemberRequest 비밀번호_미입력_회원가입_요청 = new MemberRequest("admin@mail.com", null, "admin", "010-1234-5678", "MALE");
+    private static final String 이메일 = "admin@mail.com";
+    private static final String 패스워드 = "admin1234";
+    private static final String 이름 = "가나다";
+    private static final String 휴대전화번호 = "010-1234-5678";
+    private static final String 남성 = "MALE";
+    private static final ProfileRequest 프로필_미입력_요청 = new ProfileRequest();
+    private static final MemberRequest 회원가입_요청 = new MemberRequest(이메일, 패스워드, 이름, 휴대전화번호, 남성, 프로필_미입력_요청);
+    private static final MemberRequest 비밀번호_미입력_회원가입_요청 = new MemberRequest(이메일, null, 이름, 휴대전화번호, 남성, 프로필_미입력_요청);
 
     @Autowired
     private MemberRepository memberRepository;
@@ -96,7 +103,7 @@ class MemberTest {
     @MethodSource("provideInvalidMemberRequest")
     void validate(String email, String password, String name, String phone, String gender) {
         // given
-        MemberRequest request = new MemberRequest(email, password, name, phone, gender);
+        MemberRequest request = new MemberRequest(email, password, name, phone, gender, null);
 
         // when
         Set<ConstraintViolation<MemberRequest>> validate = validator.validate(request);
@@ -126,7 +133,7 @@ class MemberTest {
         List<Member> members = memberRepository.findMembersByGender(Gender.MALE);
 
         // then
-        assertThat(members).hasSize(1);
+        assertThat(members).hasSize(3);
     }
 
     @DisplayName("일대일 양방향 연관 관계에서 주인이 아닌 엔티티를 조회할 때는 지연 로딩이 발생하지 않는다.")

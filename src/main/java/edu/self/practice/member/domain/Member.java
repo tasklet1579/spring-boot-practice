@@ -33,10 +33,10 @@ public class Member {
     @Column(nullable = false)
     private Gender gender;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "member", orphanRemoval = true)
+    @OneToOne(mappedBy = "member", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = true)
     private Profile profile;
 
-    private LocalDateTime createDate;
+    private final LocalDateTime createDate = LocalDateTime.now();
 
     public Member(MemberRequest request) {
         email = request.getEmail();
@@ -44,7 +44,7 @@ public class Member {
         name = request.getName();
         phone = request.getPhone();
         gender = Gender.findByName(request.getGender());
-        createDate = LocalDateTime.now();
+        profile = new Profile(this, request.getProfile());
     }
 
     @Override
